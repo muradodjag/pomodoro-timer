@@ -1,0 +1,16 @@
+# Build output
+*.o
+*.a
+*.so
+pomodoro-timer
+
+# Debug/core dumps
+*.dSYM/
+core
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
