@@ -18,31 +18,30 @@ const static int text_width_padding = 15;
 const static int text_height_padding = 10;
 
 static bool mouse_on_text = false;
-static char minutes[3] = {0};
-static int digit_count = 0;
-static bool is_timer_started = false;
-static char *start_btn_text = "START";
-static float time_left = 0.0f;
+static char minutes[3];
+static int digit_count;
+static bool is_timer_started;
+static char *start_btn_text;
+static float time_left;
+static Vector2 mouse_point;
+static struct tm timer_info;
+static Rectangle start_btn_rect;
+static Vector2 start_btn_text_position;
+static Rectangle reset_btn_rect;
+static Vector2 reset_btn_text_position;
+static Rectangle minutes_text_field_rect;
+static char formattedTime[9];
 
 void InitTimer() {
   InitWindow(screenWidth, screenHeight, "pomodoro-timer");
-  InitNotificationLibrary();
-  SetTargetFPS(60);
-  char formattedTime[9];
-  struct tm timer_info = {0};
-  Rectangle rect = {screenWidth / 3.0f - btn_w / 1.2f,
-                    screenHeight - 1.5f * btn_h, btn_w, btn_h};
-  Vector2 mouse_point = {0.0f, 0.0f};
-
-  Rectangle text_box = {screenWidth / 2.0f - btn_w / 2.0f, screenHeight / 2.0f,
-                        50, btn_h};
+  InitDefaultValues();
 
   while (!WindowShouldClose()) {
     mouse_point = GetMousePosition();
 
-    StartBtnHandler(rect, mouse_point, &timer_info);
+    StartBtnHandler(start_btn_rect, mouse_point, &timer_info);
 
-    MinuteTextFieldHandler(text_box, mouse_point);
+    MinuteTextFieldHandler(minutes_text_field_rect, mouse_point);
     if (is_timer_started) {
       time_left -= GetFrameTime();
 
@@ -57,16 +56,20 @@ void InitTimer() {
     BeginDrawing();
     ClearBackground(BLACK);
     DrawTimer();
-    DrawButton(rect);
-    DrawRectangleRec(text_box, DARKGRAY);
+    DrawButton(start_btn_rect, start_btn_text, start_btn_text_position);
+    DrawButton(reset_btn_rect, "RESET", reset_btn_text_position);
+    DrawRectangleRec(minutes_text_field_rect, DARKGRAY);
     if (mouse_on_text)
-      DrawRectangleLines(text_box.x, text_box.y, text_box.width,
-                         text_box.height, LIGHTGRAY);
+      DrawRectangleLines(minutes_text_field_rect.x, minutes_text_field_rect.y,
+                         minutes_text_field_rect.width,
+                         minutes_text_field_rect.height, LIGHTGRAY);
     else
-      DrawRectangleLines(text_box.x, text_box.y, text_box.width,
-                         text_box.height, DARKGRAY);
+      DrawRectangleLines(minutes_text_field_rect.x, minutes_text_field_rect.y,
+                         minutes_text_field_rect.width,
+                         minutes_text_field_rect.height, DARKGRAY);
 
-    DrawText(minutes, text_box.x + 13, text_box.y + 10, 20, MAROON);
+    DrawText(minutes, minutes_text_field_rect.x + 13,
+             minutes_text_field_rect.y + 10, 20, MAROON);
 
     EndDrawing();
   }
@@ -93,12 +96,10 @@ void FormattedTime(struct tm *time_info, char *buffer, size_t buffer_size) {
   buffer[buffer_size - 1] = '\0';
 }
 
-void DrawButton(Rectangle rect) {
+void DrawButton(Rectangle rect, char *text, Vector2 text_position) {
 
   DrawRectangleRec(rect, BLUE);
-  DrawText(start_btn_text,
-           screenWidth / 3.0f - btn_w / 1.2f + text_width_padding,
-           screenHeight - 1.5f * btn_h + text_height_padding, 20, WHITE);
+  DrawText(text, text_position.x, text_position.y, 20, WHITE);
 }
 
 void StartBtnHandler(Rectangle rect, Vector2 mouse_point,
@@ -161,6 +162,34 @@ bool IsMouseOnButton(Rectangle rect, Vector2 mouse_point) {
   }
 
   return collision;
+}
+
+void InitDefaultValues() {
+  InitNotificationLibrary();
+  SetTargetFPS(60);
+  timer_info = (struct tm){0};
+  start_btn_rect = (Rectangle){screenWidth / 3.0f - btn_w / 1.2f,
+                               screenHeight - 1.5f * btn_h, btn_w, btn_h};
+  mouse_point = (Vector2){0.0f, 0.0f};
+
+  minutes_text_field_rect = (Rectangle){screenWidth / 2.0f - btn_w / 2.0f,
+                                        screenHeight / 2.0f, 50, btn_h};
+
+  reset_btn_rect = (Rectangle){screenWidth / 2.0f + btn_w / 3.0f,
+                               screenHeight - 1.5f * btn_h, btn_w, btn_h};
+
+  start_btn_text_position =
+      (Vector2){screenWidth / 3.0f - btn_w / 1.2f + text_width_padding,
+                screenHeight - 1.5f * btn_h + text_height_padding};
+
+  reset_btn_text_position =
+      (Vector2){screenWidth / 2.0f + btn_w / 3.0f + text_width_padding,
+                screenHeight - 1.5f * btn_h + text_height_padding};
+  mouse_on_text = false;
+  digit_count = 0;
+  is_timer_started = false;
+  start_btn_text = "START";
+  time_left = 0.0f;
 }
 
 void InitNotificationLibrary(void) { notify_init("Pomodoro"); }
