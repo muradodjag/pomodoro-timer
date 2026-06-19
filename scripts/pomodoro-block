@@ -1,0 +1,23 @@
+#!/bin/bash
+DOMAINS=(
+    "youtube.com"
+    "linkedin.com"
+)
+
+setup_chain() {
+    local ipt="$1"
+    $ipt -N POMODORO 2>/dev/null
+    $ipt -F POMODORO
+    $ipt -C OUTPUT -j POMODORO 2>/dev/null || $ipt -I OUTPUT -j POMODORO
+
+    for d in "${DOMAINS[@]}"; do
+        $ipt -A POMODORO -p tcp --dport 443 \
+            -m string --algo bm --string "$d" \
+            -j REJECT --reject-with tcp-reset
+    done
+
+    $ipt -A POMODORO -p udp --dport 443 -j DROP
+}
+
+setup_chain iptables
+setup_chain ip6tables

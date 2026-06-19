@@ -52,6 +52,7 @@ void InitTimer() {
         is_timer_started = false;
         start_btn_text = "START";
         SendNotification("Pomodoro", "Time to Relax");
+        UnblockSites();
       }
     }
 
@@ -80,6 +81,7 @@ void InitTimer() {
     EndDrawing();
   }
 
+  UnblockSites();
   CloseNotificationLibrary();
   CloseWindow();
 }
@@ -125,8 +127,10 @@ void StartBtnHandler(Rectangle rect, Vector2 mouse_point) {
       is_timer_started = !is_timer_started;
       if (is_timer_started) {
         start_btn_text = "PAUSE";
+        BlockSites();
       } else {
         start_btn_text = "START";
+        UnblockSites();
       }
     }
   }
@@ -202,12 +206,13 @@ void ResetBtnHandler(Rectangle rect, Vector2 mouse_point) {
   if (IsMouseOnButton(rect, mouse_point) &&
       IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     time_left = 0;
+    UnblockSites();
   }
 }
 
-void InitNotificationLibrary(void) { notify_init("Pomodoro"); }
+void InitNotificationLibrary() { notify_init("Pomodoro"); }
 
-void CloseNotificationLibrary(void) { notify_uninit(); }
+void CloseNotificationLibrary() { notify_uninit(); }
 
 void SendNotification(const char *title, const char *message) {
   NotifyNotification *n = notify_notification_new(title, message, NULL);
@@ -218,3 +223,12 @@ void SendNotification(const char *title, const char *message) {
 
   g_object_unref(G_OBJECT(n));
 }
+
+static void run_site_script(const char *script) {
+  char cmd[256];
+  snprintf(cmd, sizeof(cmd), "sudo /usr/local/bin/%s", script);
+  system(cmd);
+}
+
+void BlockSites() { run_site_script("pomodoro-block"); }
+void UnblockSites() { run_site_script("pomodoro-unblock"); }

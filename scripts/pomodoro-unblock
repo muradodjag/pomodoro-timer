@@ -1,0 +1,13 @@
+#!/bin/bash
+teardown_chain() {
+    local ipt="$1"
+    $ipt -D OUTPUT -j POMODORO 2>/dev/null
+    $ipt -F POMODORO 2>/dev/null
+    $ipt -X POMODORO 2>/dev/null
+}
+
+teardown_chain iptables
+teardown_chain ip6tables
+
+sed -i "/# pomodoro-timer/d" /etc/hosts 2>/dev/null
+nft delete table inet pomodoro 2>/dev/null
