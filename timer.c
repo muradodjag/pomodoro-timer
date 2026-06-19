@@ -40,7 +40,8 @@ void InitTimer() {
   while (!WindowShouldClose()) {
     mouse_point = GetMousePosition();
 
-    StartBtnHandler(start_btn_rect, mouse_point, &timer_info);
+    StartBtnHandler(start_btn_rect, mouse_point);
+    ResetBtnHandler(reset_btn_rect, mouse_point);
 
     MinuteTextFieldHandler(minutes_text_field_rect, mouse_point);
     if (is_timer_started) {
@@ -107,8 +108,7 @@ void DrawButton(Rectangle rect, char *text, Vector2 text_position) {
   DrawText(text, text_position.x, text_position.y, 20, WHITE);
 }
 
-void StartBtnHandler(Rectangle rect, Vector2 mouse_point,
-                     struct tm *timer_info) {
+void StartBtnHandler(Rectangle rect, Vector2 mouse_point) {
   if (IsMouseOnButton(rect, mouse_point) &&
       IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     if (minutes[0] != '\0') {
@@ -196,6 +196,13 @@ void InitDefaultValues() {
   start_btn_text = "START";
   time_left = 0.0f;
   frames_counter = 0;
+}
+
+void ResetBtnHandler(Rectangle rect, Vector2 mouse_point) {
+  if (IsMouseOnButton(rect, mouse_point) &&
+      IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    time_left = 0;
+  }
 }
 
 void InitNotificationLibrary(void) { notify_init("Pomodoro"); }
